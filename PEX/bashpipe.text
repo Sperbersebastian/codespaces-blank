@@ -1,0 +1,1 @@
+gcc -Wall -o Ex2 Ex2.c && sleep 2s && ./Ex2
