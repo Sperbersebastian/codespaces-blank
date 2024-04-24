@@ -192,18 +192,7 @@ void multipleChoiceQuestions() {
 
 
 int main() {
-    printDataTypeRanges();
-    printDataTypeSizes();
-    calculateMaxValueFromSize();
-    printNumericalRepresentation();
-    printLetterAndNumericalRepresentation();
-    printNumbers();
-    printNumbersWithCommas();
-    printNumbersWithCommasAndNewLine();
-    sumIntegers();
-    calculateOptimalDataType();
-    multipleChoiceQuestion();
-    multipleChoiceQuestionWithRetry();
+
     multipleChoiceQuestions();    
     return 0;
 }
