@@ -1,0 +1,3 @@
+Number: 6.00, Square: 36.00, Cube: 216.00, Square Root: 2.45
+Number: 100.00, Square: 10000.00, Cube: 1000000.00, Square Root: 10.00
+Number: 500.00, Square: 250000.00, Cube: 125000000.00, Square Root: 22.36

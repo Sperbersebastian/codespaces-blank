@@ -1,1 +1,3 @@
-gcc -Wall -o Ex2 Ex2.c && sleep 2s && ./Ex2
+gcc -Wall -o Ex2 Ex2.c -lm && sleep 2s && ./Ex2
+
+-lm is for executing the math.h libary
