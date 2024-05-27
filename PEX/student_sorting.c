@@ -13,6 +13,10 @@ typedef struct Student {
 
 Student* createStudent(char* firstName, char* lastName, float grade) {
     Student* newStudent = (Student*)malloc(sizeof(Student));
+    if (!newStudent) {
+        printf("Memory allocation failed\n");
+        exit(1);
+    }
     strcpy(newStudent->firstName, firstName);
     strcpy(newStudent->lastName, lastName);
     newStudent->grade = grade;
@@ -62,15 +66,23 @@ Student* merge(Student* left, Student* right, int (*cmp)(Student*, Student*)) {
     if (!left) return right;
     if (!right) return left;
 
-    if (cmp(left, right) < 0) {
-        left->next = merge(left->next, right, cmp);
-        left->next->next = NULL;
-        return left;
-    } else {
-        right->next = merge(left, right->next, cmp);
-        right->next->next = NULL;
-        return right;
+    Student dummy;
+    Student* current = &dummy;
+    dummy.next = NULL;
+
+    while (left && right) {
+        if (cmp(left, right) <= 0) {
+            current->next = left;
+            left = left->next;
+        } else {
+            current->next = right;
+            right = right->next;
+        }
+        current = current->next;
     }
+
+    current->next = (left) ? left : right;
+    return dummy.next;
 }
 
 Student* mergeSort(Student* head, int (*cmp)(Student*, Student*)) {
@@ -100,17 +112,17 @@ int compareByLastName(Student* a, Student* b) {
 }
 
 int compareByGrade(Student* a, Student* b) {
-    return (a->grade > b->grade) - (a->grade < b->grade);
+    if (a->grade < b->grade) return -1;
+    if (a->grade > b->grade) return 1;
+    return 0;
 }
 
-int main() {
-    FILE* file = fopen("students.csv", "r");
+void readCSVAndCreateList(Student** studentList, const char* filename) {
+    FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        printf("Error opening file students.csv\n");
-        return 1;
+        printf("Error opening file %s\n", filename);
+        exit(1);
     }
-
-    Student* studentList = NULL;
 
     char line[128];
     fgets(line, sizeof(line), file);  // Skip header line
@@ -119,20 +131,28 @@ int main() {
         char lastName[MAX_NAME_LENGTH];
         float grade;
         sscanf(line, "%49[^,],%49[^,],%f", firstName, lastName, &grade);
-        appendStudent(&studentList, firstName, lastName, grade);
+        appendStudent(studentList, firstName, lastName, grade);
     }
     fclose(file);
+}
+
+int main() {
+    Student* studentList = NULL;
+
+    // Read data from CSV and create linked list
+    readCSVAndCreateList(&studentList, "students.csv");
 
     // Sort by family name
-    studentList = mergeSort(studentList, compareByLastName);
-    printToFile(studentList, "sorted_by_last_name.txt");
+    Student* sortedByLastName = mergeSort(studentList, compareByLastName);
+    printToFile(sortedByLastName, "sorted_by_last_name.txt");
 
     // Sort by grade
-    studentList = mergeSort(studentList, compareByGrade);
-    printToFile(studentList, "sorted_by_grade.txt");
+    Student* sortedByGrade = mergeSort(studentList, compareByGrade);
+    printToFile(sortedByGrade, "sorted_by_grade.txt");
 
     // Free allocated memory
-    freeList(studentList);
+    freeList(sortedByLastName);
+    freeList(sortedByGrade);
 
     return 0;
 }
