@@ -1,3 +1,7 @@
 gcc -Wall -o Ex2 Ex2.c -lm && sleep 2s && ./Ex2
 
 -lm is for executing the math.h libary
+
+g++ -Wall -o ex1 ex1.cpp && sleep 2s && ./ex1
+
+g++ -Wall -o ex1 ex1.cpp && sleep 1s && ./ex1 && sleep 1s && rm ex1
