@@ -1,4 +1,5 @@
 #include "pex.h"
+#include <iostream>
 #include <cstdlib>
 
 namespace pex {
