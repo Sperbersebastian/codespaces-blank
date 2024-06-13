@@ -16,3 +16,11 @@ namespace pex {
         return result;
     }
 }
+
+#ifndef PEX_H
+    int main() {
+    std::cout << "PEX Home: " << pex::get_home_directory()
+        << std::endl;
+    return 0;
+}
+#endif // PEX_H
