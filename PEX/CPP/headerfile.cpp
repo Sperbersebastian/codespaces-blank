@@ -9,8 +9,17 @@ namespace pex {
 class PexBan {
 public:
     void itemSave() {
-        std::cout << "itemSave method called." << std::endl;
-        std::cout << "Home Directory: " << pex::get_home_directory() << std::endl;
+        std::string home = pex::get_home_directory();
+        //Create the folder path
+        fs::path homeDir(home);
+        fs::path pexbanPath = homeDir / ".config" / "pexban";
+        fs::path itemFile = pexbanPath / "items.txt";
+        std::count << itemFile << std::endl;
+        if (!fs::is_directory(pexbanPath)) {
+            std::cout << pexbanPath << std::endl;
+            fs::create_directories(pexbanPath);
+        }
+
     }
     
     void interactiveMenu() {

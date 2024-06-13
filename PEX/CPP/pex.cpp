@@ -1,6 +1,6 @@
 #include "pex.h"
 #include <cstdlib>
-
+#include <string>
 namespace pex {
     std::string get_home_directory() {
         // Get home directory Unix
