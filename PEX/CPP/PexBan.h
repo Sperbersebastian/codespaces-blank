@@ -6,10 +6,12 @@
 
 class PexBan {
 public:
-    void itemSave();
-    void itemLoad();
     PexBan();
     ~PexBan();
+    void itemSave();
+    void itemLoad();
+    void itemLeft(std::string choice, int itemIndex);
+    void itemRight(std::string choice, int itemIndex);
 
 private:
     std::vector<std::string> todo;

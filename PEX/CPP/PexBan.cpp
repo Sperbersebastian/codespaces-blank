@@ -1,20 +1,7 @@
 #include "PexBan.h"
+#include "pex.h"
 #include <iostream>
 #include <fstream>
-#include <cstdlib>
-#include <sys/types.h>
-#include <pwd.h>
-#include <unistd.h>
-
-namespace pex {
-    std::string get_home_directory() {
-        const char *homedir;
-        if ((homedir = getenv("HOME")) == nullptr) {
-            homedir = getpwuid(getuid())->pw_dir;
-        }
-        return std::string(homedir);
-    }
-}
 
 PexBan::PexBan() {
     itemsfile = pex::get_home_directory() + "/.config/pexban/items.txt";
@@ -52,4 +39,24 @@ void PexBan::itemLoad() {
         }
     }
     infile.close();
+}
+
+void PexBan::itemLeft(std::string choice, int itemIndex) {
+    if (choice == "p" && itemIndex < progress.size()) {
+        todo.push_back(progress[itemIndex]);
+        progress.erase(progress.begin() + itemIndex);
+    } else if (choice == "d" && itemIndex < done.size()) {
+        progress.push_back(done[itemIndex]);
+        done.erase(done.begin() + itemIndex);
+    }
+}
+
+void PexBan::itemRight(std::string choice, int itemIndex) {
+    if (choice == "t" && itemIndex < todo.size()) {
+        progress.push_back(todo[itemIndex]);
+        todo.erase(todo.begin() + itemIndex);
+    } else if (choice == "p" && itemIndex < progress.size()) {
+        done.push_back(progress[itemIndex]);
+        progress.erase(progress.begin() + itemIndex);
+    }
 }

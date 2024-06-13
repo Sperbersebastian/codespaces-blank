@@ -3,10 +3,8 @@
 
 #include <string>
 
-int main() {
-        std::cout << "PEX Home: " << pex::get_home_directory()
-        << std::endl;
-    return(0);
+namespace pex {
+    std::string get_home_directory();
 }
 
 #endif // PEX_H
