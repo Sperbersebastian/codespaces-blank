@@ -138,3 +138,66 @@ void GoParser::writeToFile(const std::vector<std::vector<std::string>>& data, co
 
     outfile.close();
 }
+
+int main(int argc, char* argv[]) {
+    GoParser parser;
+
+    // Command line arguments
+    std::string option;
+    std::string filename;
+    std::string ns;
+    std::string outfile;
+
+    // Check if the number of arguments is correct
+    if (argc < 3 || argc > 5) {
+        parser.printHelp();
+        return 1;
+    }
+
+    // Parse command line arguments
+    option = argv[1];
+    filename = argv[2];
+    if (argc == 4) {
+        std::string arg3 = argv[3];
+        if (parser.isValidNamespace(arg3)) {
+            ns = arg3;
+        } else if (arg3.rfind(".tab") == arg3.length() - 4) {
+            outfile = arg3;
+        } else {
+            parser.printHelp();
+            return 1;
+        }
+    }
+    if (argc == 5) {
+        ns = argv[3];
+        outfile = argv[4];
+    }
+
+    // Validate option
+    if (!parser.isValidOption(option)) {
+        std::cerr << "Error: Invalid option '" << option << "'.\n";
+        return 1;
+    }
+
+    // Validate filename
+    if (!parser.isValidFilename(filename)) {
+        std::cerr << "Error: Invalid filename '" << filename << "'.\n";
+        return 1;
+    }
+
+    // Application logic here
+    if (option == "--consider-table") {
+        auto result = parser.considerTable(filename, ns);
+        if (!outfile.empty()) {
+            parser.writeToFile(result, outfile);
+        } else {
+            for (const auto& row : result) {
+                std::cout << row[0] << " " << row[1] << "\n";
+            }
+        }
+    } else if (option == "--obsolete-stats") {
+        parser.obsoleteStats(filename);
+    }
+
+    return 0;
+}
