@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include <minizip/unzip.h>
+#include <zip.h>
 
 namespace fs = std::filesystem;
 
@@ -34,58 +34,54 @@ bool is_zip_file(const std::string& filename) {
 }
 
 bool unzip_file(const std::string& zip_filename, const std::string& dest_directory) {
-    unzFile zipfile = unzOpen(zip_filename.c_str());
-    if (!zipfile) {
+    int err = 0;
+    zip *z = zip_open(zip_filename.c_str(), ZIP_RDONLY, &err);
+    if (!z) {
         std::cerr << "Error: Cannot open ZIP file '" << zip_filename << "'.\n";
         return false;
     }
 
-    if (unzGoToFirstFile(zipfile) != UNZ_OK) {
-        std::cerr << "Error: Cannot go to the first file in ZIP archive.\n";
-        unzClose(zipfile);
-        return false;
-    }
+    zip_int64_t num_entries = zip_get_num_entries(z, 0);
+    for (zip_int64_t i = 0; i < num_entries; ++i) {
+        struct zip_stat st;
+        zip_stat_index(z, i, 0, &st);
 
-    do {
-        char filename_in_zip[256];
-        unz_file_info file_info;
-        if (unzGetCurrentFileInfo(zipfile, &file_info, filename_in_zip, sizeof(filename_in_zip), nullptr, 0, nullptr, 0) != UNZ_OK) {
-            std::cerr << "Error: Cannot get current file info.\n";
-            unzClose(zipfile);
+        std::string full_filename = dest_directory + "/" + st.name;
+        fs::path path(full_filename);
+        fs::create_directories(path.parent_path());
+
+        zip_file *f = zip_fopen_index(z, i, 0);
+        if (!f) {
+            std::cerr << "Error: Cannot open file in ZIP archive.\n";
+            zip_close(z);
             return false;
         }
 
-        std::string full_filename = dest_directory + "/" + std::string(filename_in_zip);
         std::ofstream output_file(full_filename, std::ios::binary);
         if (!output_file.is_open()) {
             std::cerr << "Error: Cannot open output file '" << full_filename << "'.\n";
-            unzClose(zipfile);
-            return false;
-        }
-
-        if (unzOpenCurrentFile(zipfile) != UNZ_OK) {
-            std::cerr << "Error: Cannot open current file in ZIP archive.\n";
-            unzClose(zipfile);
+            zip_fclose(f);
+            zip_close(z);
             return false;
         }
 
         char buffer[8192];
-        int bytes_read;
-        while ((bytes_read = unzReadCurrentFile(zipfile, buffer, sizeof(buffer))) > 0) {
+        zip_int64_t bytes_read;
+        while ((bytes_read = zip_fread(f, buffer, sizeof(buffer))) > 0) {
             output_file.write(buffer, bytes_read);
         }
 
-        unzCloseCurrentFile(zipfile);
+        zip_fclose(f);
         output_file.close();
 
         if (bytes_read < 0) {
             std::cerr << "Error: Failed to read file in ZIP archive.\n";
-            unzClose(zipfile);
+            zip_close(z);
             return false;
         }
-    } while (unzGoToNextFile(zipfile) == UNZ_OK);
+    }
 
-    unzClose(zipfile);
+    zip_close(z);
     return true;
 }
 
@@ -116,7 +112,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (is_zip_file(obofile)) {
-            std::string dest_directory = fs::path(obofile).parent_path();
+            std::string dest_directory = fs::path(obofile).parent_path().string();
             if (!unzip_file(obofile, dest_directory)) {
                 std::cerr << "Error: Failed to unzip file '" << obofile << "'.\n";
                 return 1;
