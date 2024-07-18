@@ -1,87 +1,86 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
+// Filename: obo_parser.cpp
+// Author: Sebastian Sperber
 
-// Function declarations
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+// Function prototypes
 void printHelp();
-bool isValidFilename(const std::string& filename);
-bool isValidOption(const std::string& option);
-bool isValidNamespace(const std::string& ns);
+bool isValidSlimName(const std::string& slimName);
+bool fileExists(const std::string& filename);
 
 int main(int argc, char* argv[]) {
-    // Command line arguments
-    std::string option;
-    std::string filename;
-    std::string ns;
-
-    // List of valid options and namespaces
-    std::vector<std::string> validOptions = {"--consider-table", "--obsolete-stats"};
-    std::vector<std::string> validNamespaces = {"molecular_function", "cellular_component", "biological_process"};
-
-    // Check if the number of arguments is correct
-    if (argc < 3 || argc > 4) {
+    // Check if the correct number of arguments is provided
+    if (argc < 2 || argc > 4) {
         printHelp();
         return 1;
     }
 
-    // Parse command line arguments
-    option = argv[1];
-    filename = argv[2];
-    if (argc == 4) {
-        ns = argv[3];
+    // Process command line arguments
+    std::string task;
+    std::string slimName;
+    std::string oboFile;
+
+    for (int i = 1; i < argc; ++i) {
+        std::string arg = argv[i];
+
+        if (arg == "--help") {
+            printHelp();
+            return 0;
+        } else if (arg == "--get-slims") {
+            task = "--get-slims";
+        } else if (arg == "--tab-slim") {
+            if (i + 1 < argc) {
+                slimName = argv[++i];
+                if (!isValidSlimName(slimName)) {
+                    std::cerr << "Slim identifiers should consist only of lowercase letters!\n";
+                    return 1;
+                }
+            } else {
+                printHelp();
+                return 1;
+            }
+        } else {
+            oboFile = arg;
+        }
     }
 
-    // Validate option
-    if (!isValidOption(option)) {
-        std::cerr << "Error: Invalid option '" << option << "'.\n";
+    // Check if a valid OBO file is provided
+    if (!fileExists(oboFile)) {
+        std::cerr << "'" << oboFile << "' does not exist!\n";
         return 1;
     }
 
-    // Validate filename
-    if (!isValidFilename(filename)) {
-        std::cerr << "Error: Invalid filename '" << filename << "'.\n";
+    // Placeholder for functionality
+    if (task == "--get-slims") {
+        std::cout << "No functionality yet!\n";
+    } else if (task == "--tab-slim") {
+        std::cout << "No functionality yet!\n";
+    } else {
+        printHelp();
         return 1;
-    }
-
-    // Validate namespace if provided
-    if (argc == 4 && !isValidNamespace(ns)) {
-        std::cerr << "Error: Invalid namespace '" << ns << "'.\n";
-        return 1;
-    }
-
-    // Application logic here
-    std::cout << "Option: " << option << "\n";
-    std::cout << "Filename: " << filename << "\n";
-    if (argc == 4) {
-        std::cout << "Namespace: " << ns << "\n";
     }
 
     return 0;
 }
 
 void printHelp() {
-    std::cout << "Usage: go_parser <option> <filename> [namespace]\n";
-    std::cout << "Options:\n";
-    std::cout << "  --consider-table    : Generate a table of consider terms.\n";
-    std::cout << "  --obsolete-stats    : Generate statistics on obsolete terms.\n";
-    std::cout << "Filename:\n";
-    std::cout << "  Path to the GO file.\n";
-    std::cout << "Namespace (optional):\n";
-    std::cout << "  molecular_function\n";
-    std::cout << "  cellular_component\n";
-    std::cout << "  biological_process\n";
+    std::cout << "Usage: appname [--help,--get-slims,--tab-slim SLIMNAME] OBOFILE\n";
+    std::cout << "Ed's Obo-Parser - extract information from GO-Obo files\n\n";
+    std::cout << "--help                   - display this help page\n";
+    std::cout << "--get-slims              - get all slim names\n";
+    std::cout << "--tab-slim SLIMNAME      - get GO-ids, names and namespaces for given slim\n";
+    std::cout << "OBOFILE                  - an uncompressed Gene Ontology Obo file\n";
 }
 
-bool isValidFilename(const std::string& filename) {
+bool isValidSlimName(const std::string& slimName) {
+    return std::all_of(slimName.begin(), slimName.end(), [](unsigned char c) {
+        return std::islower(c);
+    });
+}
+
+bool fileExists(const std::string& filename) {
     std::ifstream file(filename);
     return file.good();
-}
-
-bool isValidOption(const std::string& option) {
-    return option == "--consider-table" || option == "--obsolete-stats";
-}
-
-bool isValidNamespace(const std::string& ns) {
-    return ns == "molecular_function" || ns == "cellular_component" || ns == "biological_process";
 }
